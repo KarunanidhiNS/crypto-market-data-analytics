@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Crypto Market Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="noise"></div>
+
+    <div class="ticker-bar">
+        <div class="ticker-track">
+            <span class="ticker-item">BTC <span class="up">▲ 2.14%</span></span>
+            <span class="ticker-item">ETH <span class="up">▲ 1.87%</span></span>
+            <span class="ticker-item">BNB <span class="down">▼ 0.43%</span></span>
+            <span class="ticker-item">SOL <span class="up">▲ 3.21%</span></span>
+            <span class="ticker-item">XRP <span class="down">▼ 1.05%</span></span>
+            <span class="ticker-item">ADA <span class="up">▲ 0.77%</span></span>
+            <span class="ticker-item">DOGE <span class="up">▲ 5.33%</span></span>
+            <span class="ticker-item">AVAX <span class="down">▼ 2.11%</span></span>
+            <span class="ticker-item">DOT <span class="up">▲ 1.44%</span></span>
+            <span class="ticker-item">MATIC <span class="down">▼ 0.98%</span></span>
+            <!-- duplicate for seamless loop -->
+            <span class="ticker-item">BTC <span class="up">▲ 2.14%</span></span>
+            <span class="ticker-item">ETH <span class="up">▲ 1.87%</span></span>
+            <span class="ticker-item">BNB <span class="down">▼ 0.43%</span></span>
+            <span class="ticker-item">SOL <span class="up">▲ 3.21%</span></span>
+            <span class="ticker-item">XRP <span class="down">▼ 1.05%</span></span>
+        </div>
+    </div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo-block">
+                <div class="logo-icon">
+                    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                        <polygon points="18,2 34,10 34,26 18,34 2,26 2,10" stroke="#F0A500" stroke-width="1.5" fill="none"/>
+                        <polygon points="18,8 28,13 28,23 18,28 8,23 8,13" stroke="#F0A500" stroke-width="1" fill="none" opacity="0.5"/>
+                        <circle cx="18" cy="18" r="4" fill="#F0A500"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="logo-title">CRYPTEX</div>
+                    <div class="logo-sub">MARKET INTELLIGENCE PLATFORM</div>
+                </div>
+            </div>
+            <div class="header-status">
+                <div class="status-dot"></div>
+                <span class="status-label">LIVE FEED</span>
+                <span class="status-time" id="liveTime">--:--:--</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section class="control-bar">
+            <div class="control-label">OPERATIONS</div>
+            <div class="btn-group">
+                <button class="btn" onclick="loadMarkets()">
+                    <span class="btn-icon">⬡</span> LOAD MARKETS
+                </button>
+                <button class="btn btn-secondary" onclick="loadAnalytics()">
+                    <span class="btn-icon">◈</span> ANALYTICS
+                </button>
+                <button class="btn btn-accent" onclick="runStrategy()">
+                    <span class="btn-icon">▶</span> RUN STRATEGY
+                </button>
+            </div>
+            <div class="refresh-badge">
+                <span class="refresh-ring"></span>
+                AUTO-REFRESH 30s
+            </div>
+        </section>
+
+        <section class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">TOTAL MARKETS</div>
+                <div class="stat-value" id="statMarkets">—</div>
+                <div class="stat-change up">TRACKED</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">AVG PRICE</div>
+                <div class="stat-value" id="statAvgPrice">—</div>
+                <div class="stat-change up">USD</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">TOTAL VOLUME</div>
+                <div class="stat-value" id="statVolume">—</div>
+                <div class="stat-change up">24H</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">LAST UPDATED</div>
+                <div class="stat-value stat-value--sm" id="statUpdated">—</div>
+                <div class="stat-change">TIMESTAMP</div>
+            </div>
+        </section>
+
+        <div class="two-col">
+
+            <!-- Market Table -->
+            <section class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">◧ MARKET DATA</span>
+                    <span class="panel-badge">REAL-TIME</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SYMBOL</th>
+                                <th>PRICE</th>
+                                <th>VOLUME</th>
+                                <th>TIMESTAMP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marketTable">
+                            <tr><td colspan="5" class="empty-row">Awaiting data feed...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">◨ ANALYTICS</span>
+                    <span class="panel-badge">COMPUTED</span>
+                </div>
+                <div id="analytics" class="analytics-grid">
+                    <div class="analytics-empty">Run analytics to see results</div>
+                </div>
+            </section>
+
+        </div>
+
+        <section class="panel strategy-panel">
+            <div class="panel-header">
+                <span class="panel-title">⬡ STRATEGY ENGINE — MOVING AVERAGE CROSSOVER</span>
+                <span class="panel-badge">MA SIGNALS</span>
+            </div>
+            <div id="strategy" class="strategy-grid">
+                <div class="analytics-empty">Execute strategy to receive signals</div>
+            </div>
+        </section>
+
+        <section class="panel charts-section">
+            <div class="panel-header">
+                <span class="panel-title">◈ VISUALIZATIONS</span>
+                <span class="panel-badge">CHART SUITE</span>
+            </div>
+            <div class="chart-grid">
+
+                <div class="chart-box">
+                    <div class="chart-label">PRICE BAR CHART</div>
+                    <canvas id="priceChart"></canvas>
+                </div>
+
+                <div class="chart-box">
+                    <div class="chart-label">VOLUME LINE CHART</div>
+                    <canvas id="volumeChart"></canvas>
+                </div>
+
+                <div class="chart-box">
+                    <div class="chart-label">PRICE DISTRIBUTION</div>
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+
+                <div class="chart-box">
+                    <div class="chart-label">MARKET SHARE — POLAR</div>
+                    <canvas id="polarChart"></canvas>
+                </div>
+
+                <div class="chart-box full-width">
+                    <div class="chart-label">COMBINED PRICE & VOLUME TREND</div>
+                    <canvas id="mixedChart"></canvas>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <span>CRYPTEX PLATFORM © 2025</span>
+        <span class="footer-sep">|</span>
+        <span>DATA REFRESHES EVERY 30 SECONDS</span>
+        <span class="footer-sep">|</span>
+        <span>FOR INFORMATIONAL USE ONLY</span>
+    </footer>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script>
+        // Live clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveTime').textContent =
+                now.toTimeString().slice(0,8);
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
